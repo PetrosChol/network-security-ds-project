@@ -7,7 +7,6 @@ pymongo[srv]
 scikit-learn
 pydantic
 black
-dill
 pyyaml
 
 # -e .
