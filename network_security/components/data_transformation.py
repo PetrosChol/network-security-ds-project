@@ -31,6 +31,7 @@ class DataTransformation:
         except Exception as e:
             raise NetworkSecurityException(e, sys)
 
+    @classmethod
     def get_data_transformer_object(cls) -> Pipeline:
         """
         This function initialises KNN Imputer object with the parameters specified in the training_pipeline.py file
