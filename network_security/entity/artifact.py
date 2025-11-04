@@ -19,3 +19,13 @@ class DataTransformationArtifact(BaseModel):
     transformed_object_file_path: str
     transformed_train_file_path: str
     transformed_test_file_path: str
+
+class ClassificationMetricArtifact(BaseModel):
+    f1_score: float
+    precision_score: float
+    recall_score: float
+
+class ModelTrainerArtifact(BaseModel):
+    trainer_model_file_path: str
+    train_metric_artifact: ClassificationMetricArtifact
+    test_metric_artifact: ClassificationMetricArtifact
