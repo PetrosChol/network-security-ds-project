@@ -1,6 +1,9 @@
 import os
 import sys
 import mlflow
+import dagshub
+from urllib.parse import urlparse
+from dotenv import load_dotenv
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import r2_score
@@ -18,6 +21,10 @@ from network_security.utils.main_utils.utils import save_object, load_object, lo
 from network_security.utils.ml_utils.metric.classification import get_classification_score
 from network_security.utils.ml_utils.model.estimator import NetworkModel
 
+load_dotenv()
+
+dagshub.init(repo_owner='PetrosChol', repo_name='network-security-ds-project', mlflow=True)
+
 class ModelTrainer:
     def __init__(self, model_trainer_config: ModelTrainerConfig, data_transformation_artifact: DataTransformationArtifact) -> None:
         try:
@@ -27,6 +34,8 @@ class ModelTrainer:
             raise NetworkSecurityException(e, sys)
         
     def track_mlflow(self, best_model, classification_metric: ClassificationMetricArtifact):
+        mlflow.set_registry_uri(os.getenv("MLFLOW_TRACKING_URI"))
+        tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
         with mlflow.start_run():
             f1_score = classification_metric.f1_score
             precision_score = classification_metric.precision_score
@@ -35,7 +44,7 @@ class ModelTrainer:
             mlflow.log_metric("F1 Score", f1_score)
             mlflow.log_metric("Precision", precision_score)
             mlflow.log_metric("Recall", recall_score)
-            mlflow.sklearn.log_model(best_model, "Model")
+            mlflow.sklearn.log_model(best_model, "model")
         
     def train_model(self, X_train, y_train, X_test, y_test):
         models = {
@@ -116,6 +125,8 @@ class ModelTrainer:
             model=best_model
         )
         save_object(file_path=self.model_trainer_config.trained_model_file_path, obj=network_model)
+
+        save_object("final_model/model.pkl", best_model)
 
         # Model Trainer Artifact
         model_trainer_artifact = ModelTrainerArtifact(
